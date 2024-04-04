@@ -4,27 +4,43 @@ from typing import List
 import pika
 
 app = FastAPI()
+EXCHANGE = 'chat'
+EXCHANGE_TYPE = 'fanout'
+RABBIT_MQ_HOST = 'rabbitmq'
 
 class Message(BaseModel):
     content: str
 
 @app.post("/send/")
 async def send_message(message: Message):
-    connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(RABBIT_MQ_HOST))
     channel = connection.channel()
-    channel.queue_declare(queue='chat')
-    channel.basic_publish(exchange='', routing_key='chat', body=message.content)
+    channel.exchange_declare(
+        exchange=EXCHANGE, 
+        exchange_type=EXCHANGE_TYPE
+    )
+    channel.basic_publish(
+        exchange=EXCHANGE,
+        routing_key='',
+        body=message.content,
+    )
     connection.close()
     return {"status": "message sent"}
 
 @app.get("/receive/")
 async def receive_message():
-    connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBIT_MQ_HOST))
     channel = connection.channel()
-    channel.queue_declare(queue='chat')
-    method_frame, header_frame, body = channel.basic_get('chat')
+
+    channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
+    result = channel.queue_declare(queue='')
+    queue_name = result.method.queue
+
+    channel.queue_bind(exchange=EXCHANGE, queue=queue_name)
+
+    method_frame, header_frame, body = channel.basic_get(queue=queue_name, auto_ack=True)
     if method_frame:
-        channel.basic_ack(method_frame.delivery_tag)
+        print(f" [x] Received {body}")
         return {"message": body.decode()}
     else:
         return {"message": "No messages in queue"}
