@@ -1,30 +1,16 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from pydantic import BaseModel
-from typing import List
+import asyncio
 import pika
+import json
+
+from src.data_model import Message
+from src.socket_manager import SocketManager
+from src.constants import RABBIT_MQ_HOST, EXCHANGE, EXCHANGE_TYPE
+from fastapi import FastAPI
+from starlette.concurrency import run_in_threadpool
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 app = FastAPI()
-EXCHANGE = 'chat'
-EXCHANGE_TYPE = 'fanout'
-RABBIT_MQ_HOST = 'rabbitmq'
 
-class Message(BaseModel):
-    content: str
-
-class SocketManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    async def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_message(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
 
 manager = SocketManager()
 
@@ -39,7 +25,8 @@ async def send_message(message: Message):
     channel.basic_publish(
         exchange=EXCHANGE,
         routing_key='',
-        body=message.content,
+        body=json.dumps(message.to_dict()),
+        properties=pika.BasicProperties( delivery_mode = pika.DeliveryMode.Persistent)
     )
     connection.close()
     return {"status": "message sent"}
@@ -51,14 +38,20 @@ async def receive_message(user_name: str, websocket: WebSocket):
     channel = connection.channel()
 
     channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
-    result = channel.queue_declare(queue=user_name)
-    queue_name = result.method.queue
+    channel.queue_declare(queue=user_name, durable=True)
+    channel.queue_bind(exchange=EXCHANGE, queue=user_name)
 
-    channel.queue_bind(exchange=EXCHANGE, queue=queue_name)
-
-    while True:
-        method_frame, header_frame, body = channel.basic_get(queue=queue_name, auto_ack=True)
+    def callback(ch, method, properties, body):
         try:
-            await websocket.send_text(body.decode())
-        except WebSocketDisconnect:
+            if manager.is_connected(websocket):
+                asyncio.run(manager.send_message(body.decode('utf-8'), websocket))
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        except WebSocketDisconnect as e:
+            print(f"[x] Error: {e}")
             manager.disconnect(websocket)
+            connection.close()
+
+    def consume():
+        channel.basic_consume(queue=user_name, on_message_callback=callback, auto_ack=False)
+        channel.start_consuming()
+    await run_in_threadpool(consume)

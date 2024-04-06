@@ -4,6 +4,8 @@ services:
     build: .
     ports:
       - "80:80"
+    volumes:
+      - .:/app
   rabbitmq:
     image: "rabbitmq:3-management"
     ports:
