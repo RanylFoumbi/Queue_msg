@@ -8,9 +8,20 @@ from src.constants import RABBIT_MQ_HOST, EXCHANGE, EXCHANGE_TYPE
 from fastapi import FastAPI
 from starlette.concurrency import run_in_threadpool
 from starlette.websockets import WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True, # Allows cookies
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 manager = SocketManager()
 
