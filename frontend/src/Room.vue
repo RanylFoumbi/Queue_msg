@@ -35,7 +35,7 @@
             
             <!-- Chat Messages -->
             <div class="h-screen overflow-y-auto p-4 pb-36" ref="messagesContainer" >
-               <Message v-for="message in messages" :key="message.id" :message="message" />
+               <Message v-for="(message, index) in messages" :key="index" :message="message" />
             </div>
             
             <!-- Chat Input -->
@@ -53,7 +53,8 @@
 import Message  from './components/Message.vue'
 import router from './router';
 import Loader from './components/Loader.vue';
-import SocketioService from './api/socket';
+import axios from 'axios';
+import { IMessage } from './models/Message';
 
 export default {
     name: 'Room',
@@ -67,190 +68,52 @@ export default {
             users:[] as string[],
             loading: false,
             currentMessage: '', 
-            messages: [
-                {
-                    id: '1',
-                    content: 'Hey Bob, how\'s it going?',
-                    createdAt: '2021-09-01T12:00:00Z',
-                    isDelivered: false,
-                    sender: 'Alice'
-                },
-                {
-                    id: '2',
-                    content: 'Hi Alice! I\'m good, just finished a great book. How about you?',
-                    createdAt: '2021-09-01T12:01:00Z',
-                    isDelivered: true,
-                    sender: 'rany'
-                },
-                {
-                    id: '3',
-                    content: 'I\'m doing great too! What book did you read?',
-                    createdAt: '2021-09-01T12:02:00Z',
-                    isDelivered: true,
-                    sender: 'Alice'
-                },
-                {
-                    id: '4',
-                    content: 'I read "The Alchemist" by Paulo Coelho. It was amazing!',
-                    createdAt: '2021-09-01T12:03:00Z',
-                    isDelivered: true,
-                    sender: 'rany'
-                },
-                {
-                    id: '1',
-                    content: 'Hey Bob, how\'s it going?',
-                    createdAt: '2021-09-01T12:00:00Z',
-                    isDelivered: false,
-                    sender: 'Alice7'
-                },
-                {
-                    id: '2',
-                    content: 'Hi Alice! I\'m good, just finished a great book. How about you?',
-                    createdAt: '2021-09-01T12:01:00Z',
-                    isDelivered: true,
-                    sender: 'rany'
-                },
-                {
-                    id: '3',
-                    content: 'I\'m doing great too! What book did you read?',
-                    createdAt: '2021-09-01T12:02:00Z',
-                    isDelivered: true,
-                    sender: 'Alice4'
-                },
-                {
-                    id: '4',
-                    content: 'I read "The Alchemist" by Paulo Coelho. It was amazing!',
-                    createdAt: '2021-09-01T12:03:00Z',
-                    isDelivered: true,
-                    sender: 'rany'
-                },
-                {
-                    id: '1',
-                    content: 'Hey Bob, how\'s it going?',
-                    createdAt: '2021-09-01T12:00:00Z',
-                    isDelivered: false,
-                    sender: 'Alice'
-                },
-                {
-                    id: '2',
-                    content: 'Hi Alice! I\'m good, just finished a great book. How about you?',
-                    createdAt: '2021-09-01T12:01:00Z',
-                    isDelivered: true,
-                    sender: 'rany2'
-                },
-                {
-                    id: '3',
-                    content: 'I\'m doing great too! What book did you read?',
-                    createdAt: '2021-09-01T12:02:00Z',
-                    isDelivered: true,
-                    sender: 'Alice3'
-                },
-                {
-                    id: '4',
-                    content: 'I read "The Alchemist" by Paulo Coelho. It was amazing!',
-                    createdAt: '2021-09-01T12:03:00Z',
-                    isDelivered: true,
-                    sender: 'rany'
-                },
-                {
-                    id: '3',
-                    content: 'I\'m doing great too! What book did you read?',
-                    createdAt: '2021-09-01T12:02:00Z',
-                    isDelivered: true,
-                    sender: 'Alice3'
-                },
-                {
-                    id: '4',
-                    content: 'I read "The Alchemist" by Paulo Coelho. It was amazing!',
-                    createdAt: '2021-09-01T12:03:00Z',
-                    isDelivered: true,
-                    sender: 'rany'
-                },
-                {
-                    id: '3',
-                    content: 'I\'m doing great too! What book did you read?',
-                    createdAt: '2021-09-01T12:02:00Z',
-                    isDelivered: true,
-                    sender: 'Alice0'
-                },
-                {
-                    id: '4',
-                    content: 'I read "The Alchemist" by Paulo Coelho. It was amazing!',
-                    createdAt: '2021-09-01T12:03:00Z',
-                    isDelivered: true,
-                    sender: 'rany6'
-                },
-                {
-                    id: '3',
-                    content: 'I\'m doing great too! What book did you read?',
-                    createdAt: '2021-09-01T12:02:00Z',
-                    isDelivered: true,
-                    sender: 'Alice38'
-                },
-                {
-                    id: '4',
-                    content: 'I read "The Alchemist" by Paulo Coelho. It was amazing!',
-                    createdAt: '2021-09-01T12:03:00Z',
-                    isDelivered: true,
-                    sender: 'rany16'
-                },
-                {
-                    id: '3',
-                    content: 'I\'m doing great too! What book did you read?',
-                    createdAt: '2021-09-01T12:02:00Z',
-                    isDelivered: true,
-                    sender: 'Alice08'
-                },
-                {
-                    id: '4',
-                    content: 'I read "The Alchemist" by Paulo Coelho. It was amazing!',
-                    createdAt: '2021-09-01T12:03:00Z',
-                    isDelivered: true,
-                    sender: 'rany90'
-                },
-            ]
+            socket: null as any,
+            messages: [] as IMessage[]
         }
     },
     async mounted() {
-        // Get the list of users from the messages
-        console.log(router.currentRoute.value);
+
         this.currentUsername = router.currentRoute.value.params.username as string;
-        SocketioService.setupSocketConnection(this.currentUsername as string);
-        console.log(this.currentUsername);
-        this.users = this.messages.map((message) => message.sender);
+        this.socket = new WebSocket(`ws://localhost:80/receive/${this.currentUsername}`);
+            this.socket.onmessage = this.receiveMessage;
         this.users.push(this.currentUsername as string);
         this.users = this.users.reverse().filter((value, index, self) => self.indexOf(value) === index);
     },
-    async created() {
-        // Connect to the chat server
-    },
+ 
     beforeUnmount() {
         // Disconnect from the chat server
-        SocketioService.disconnectSocket();
+        this.socket.close();
     },
     methods: {
-        // Send a message to the chat server
         sendMessage() {
             // Send the message to the chat server
-            this.messages.push({
-                id: '5',
+
+            axios.post('http://localhost:80/send', {
                 content: this.currentMessage,
-                createdAt: new Date().toISOString(),
-                isDelivered: false,
-                sender: String(this.currentUsername)
+                user_name: this.currentUsername
             });
 
             this.$nextTick(() => {
                 const container: any = this.$refs.messagesContainer;
                 container.scrollTop = container.scrollHeight;
                 this.currentMessage = '';
-            });
+            })
 
         },
 
         // Receive a message from the chat server
-        receiveMessage() {
+        receiveMessage(event: any) {
             // Receive the message from the chat server
+             // Parse the data from the event
+             console.log({event});
+             const data = JSON.parse(event.data);
+             console.log({data});
+               this.messages.push({
+                content: data.content,
+                createdAt: data.sent_at,
+                sender: data.user_name
+            });
         },
 
         logout() {
@@ -262,9 +125,6 @@ export default {
             }, 1000);
         }
     },
-    watch: {
-        // Watch for new messages
-    }
 
 }
 </script>

@@ -11,7 +11,7 @@
             <div :class="isMine ? 'flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-s-xl rounded-b-xl' : 'flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-300 rounded-e-xl rounded-es-xl'">
                 <p class="text-sm font-normal text-gray-500 "> {{ message?.content }}</p>
             </div>
-            <span class="text-sm font-normal text-gray-500 ">{{ message?.isDelivered ? 'Envoyé' : '' }}</span>
+            <!-- <span class="text-sm font-normal text-gray-500 ">{{ message?.isDelivered ? 'Envoyé' : '' }}</span> -->
         </div>
     </div>
    </div>
@@ -35,7 +35,7 @@ export default {
     computed: {
         // Check if the message is sent by the current user
         isMine() {
-            const currentUser = router.currentRoute.value.query.username;
+            const currentUser = router.currentRoute.value.params.username;
             return this.message?.sender === currentUser;
         },
     },

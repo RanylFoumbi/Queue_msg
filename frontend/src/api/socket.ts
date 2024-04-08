@@ -1,12 +1,13 @@
-// import { DefaultEventsMap } from "@socket.io/component-emitter";
-// import { io, Socket } from "socket.io-client";
-
 class SocketioService {
   socket: WebSocket | undefined;
   constructor() {}
 
   setupSocketConnection(username: string) {
+    console.log(`Connecting to websocket...`);
     this.socket = new WebSocket(`ws://localhost:80/receive/${username}`);
+    this.socket.onmessage = () => {
+      console.log(`Connected to websocket.`);
+    }
   }
 
   disconnectSocket() {
