@@ -8,7 +8,7 @@
         </div>
 
         <div class="mt-10 mx-auto md:w-[25%] w-[70%]">
-            <form class="space-y-6" action="room/">
+            <form class="space-y-6" @submit.prevent="joinChat">
                 <div>
                     <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Nom
                         d'utilisateur</label>
@@ -20,9 +20,11 @@
 
                 <div>
                     <button type="submit"
+                        :class="{'cursor-not-allowed opacity-50': loading}"
+                        :disabled="loading"
                         class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                         <span v-if="loading">
-                            <i class="mdi mdi-chat"></i>
+                            <i class="mdi mdi-chat animate-spin"></i>
                         </span>
                         <span v-else>
                             <i class="mdi mdi-chat"></i> Joindre chat
@@ -34,7 +36,8 @@
     </div>
 </template>
 
-<script lang="ts">
+<script>
+import router from './router';
 
 export default {
     name: 'Login',
@@ -45,16 +48,17 @@ export default {
         };
     },
     methods: {
-        joinChat() {
+        async joinChat() {
             if (this.username !== '') {
                 this.loading = true;
-                this.$router.push({ name: 'Room', params: { username: this.username }, replace: true });
-                this.loading = false;
+                // Simulate API request delay (remove this line in real application)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Redirect to room page with username as parameter
+                router.push({ name: 'Room', params: { username: this.username }});
             }
         },
     },
 }
-
 </script>
 
 <style scoped></style>

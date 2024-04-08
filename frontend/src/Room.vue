@@ -53,6 +53,7 @@
 import Message  from './components/Message.vue'
 import router from './router';
 import Loader from './components/Loader.vue';
+import SocketioService from './api/socket';
 
 export default {
     name: 'Room',
@@ -212,15 +213,20 @@ export default {
     },
     async mounted() {
         // Get the list of users from the messages
-        console.log(router.currentRoute.value.query.username);
-        this.currentUsername = router.currentRoute.value.query.username as string;
+        console.log(router.currentRoute.value);
+        this.currentUsername = router.currentRoute.value.params.username as string;
+        SocketioService.setupSocketConnection(this.currentUsername as string);
         console.log(this.currentUsername);
         this.users = this.messages.map((message) => message.sender);
-        this.users.push(this.currentUsername);
+        this.users.push(this.currentUsername as string);
         this.users = this.users.reverse().filter((value, index, self) => self.indexOf(value) === index);
     },
     async created() {
         // Connect to the chat server
+    },
+    beforeUnmount() {
+        // Disconnect from the chat server
+        SocketioService.disconnectSocket();
     },
     methods: {
         // Send a message to the chat server
