@@ -11,7 +11,7 @@
           <div class="overflow-y-auto h-screen p-3 mb-9 pb-20">
             <div class="flex items-center mb-4 cursor-pointer bg-gray-100 p-2 rounded-md " v-for="user in users">
                 <div class="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-gray-200 rounded-full">
-                    <span class="font-medium text-green-600 ">{{ user.toUpperCase().substring(0,2) }}</span>
+                    <span class="font-medium text-green-600 ">{{ user?.toUpperCase().substring(0,2) }}</span>
                 </div>
               <div class="flex-1 pl-5">
                 <h2 class="text-lg font-semibold">{{ user }}</h2> 
@@ -41,7 +41,7 @@
             <!-- Chat Input -->
             <footer class="bg-white border-t border-gray-300 p-4 absolute bottom-0 w-3/4">
                 <div class="flex items-center">
-                    <input type="text" placeholder="Entrer a message..." v-model="currentMessage" class="w-full p-2 rounded-md border border-gray-400 focus:outline-none focus:border-blue-500">
+                    <input type="text" placeholder="Entrer a message..." v-model="currentMessage" @keyup.enter="sendMessage" class="w-full p-2 rounded-md border border-gray-400 focus:outline-none focus:border-blue-500">
                     <button @click="sendMessage" class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2">Envoyer</button>
                 </div>
             </footer>
@@ -69,27 +69,27 @@ export default {
             loading: false,
             currentMessage: '', 
             socket: null as any,
-            messages: [] as IMessage[]
+            messages: [] as IMessage[],
+            api_url: 'http://localhost:80'
         }
     },
     async mounted() {
-
-        this.currentUsername = router.currentRoute.value.params.username as string;
+         // Connect to the chat server
+         this.currentUsername = router.currentRoute.value.params.username as string;
+        //  this.users.push(this.currentUsername);
+         console.log({currentUsername: this.currentUsername});
         this.socket = new WebSocket(`ws://localhost:80/receive/${this.currentUsername}`);
-            this.socket.onmessage = this.receiveMessage;
-        this.users.push(this.currentUsername as string);
-        this.users = this.users.reverse().filter((value, index, self) => self.indexOf(value) === index);
-    },
- 
-    beforeUnmount() {
-        // Disconnect from the chat server
-        this.socket.close();
+        axios.post(`${this.api_url}/send`, {
+            content: "CONNECTION_MESSAGE",
+            user_name: this.currentUsername
+        });
+
+        this.socket.onmessage = this.receiveMessage;  
     },
     methods: {
         sendMessage() {
             // Send the message to the chat server
-
-            axios.post('http://localhost:80/send', {
+            axios.post(`${this.api_url}/send`, {
                 content: this.currentMessage,
                 user_name: this.currentUsername
             });
@@ -102,18 +102,24 @@ export default {
 
         },
 
+        getActiveUsers() {
+            // Get the list of active users from the chat server
+            axios.get(`${this.api_url}/users`)
+            .then((response) => {
+                console.log({response});
+                this.users = response.data.users;
+            });
+        },
+
         // Receive a message from the chat server
         receiveMessage(event: any) {
-            // Receive the message from the chat server
-             // Parse the data from the event
-             console.log({event});
              const data = JSON.parse(event.data);
-             console.log({data});
                this.messages.push({
                 content: data.content,
                 createdAt: data.sent_at,
                 sender: data.user_name
             });
+            this.getActiveUsers();
         },
 
         logout() {
@@ -122,9 +128,13 @@ export default {
             setTimeout(() => {
                 this.$router.push({ name: 'Login' });
                 this.loading = false;
+                axios.post(`${this.api_url}/send`, {
+                    content: 'DISCONNECTION_MESSAGE',
+                    user_name: this.currentUsername
+                });
             }, 1000);
         }
-    },
+    },  
 
 }
 </script>

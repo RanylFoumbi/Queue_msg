@@ -14,13 +14,12 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=True, # Allows cookies
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 manager = SocketManager()
@@ -44,7 +43,7 @@ async def send_message(message: Message):
 
 @app.websocket("/receive/{user_name}")
 async def receive_message(user_name: str, websocket: WebSocket):
-    await manager.connect(websocket)
+    await manager.connect(user_name, websocket)
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBIT_MQ_HOST))
     channel = connection.channel()
 
@@ -54,15 +53,19 @@ async def receive_message(user_name: str, websocket: WebSocket):
 
     def callback(ch, method, properties, body):
         try:
-            if manager.is_connected(websocket):
+            if manager.is_connected(user_name):
                 asyncio.run(manager.send_message(body.decode('utf-8'), websocket))
             ch.basic_ack(delivery_tag=method.delivery_tag)
-        except WebSocketDisconnect as e:
-            print(f"[x] Error: {e}")
-            manager.disconnect(websocket)
+        except WebSocketDisconnect:
+            print(f"[x] Error {user_name} ")
+            asyncio.run(manager.disconnect(user_name))
             connection.close()
 
     def consume():
         channel.basic_consume(queue=user_name, on_message_callback=callback, auto_ack=False)
         channel.start_consuming()
     await run_in_threadpool(consume)
+
+@app.get("/users/")
+async def get_users():
+    return {"users": list(manager.active_connections.keys())}

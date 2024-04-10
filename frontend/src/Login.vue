@@ -23,12 +23,8 @@
                         :class="{'cursor-not-allowed opacity-50': loading}"
                         :disabled="loading"
                         class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        <span v-if="loading">
-                            <i class="mdi mdi-chat animate-spin"></i>
-                        </span>
-                        <span v-else>
-                            <i class="mdi mdi-chat"></i> Joindre chat
-                        </span>
+                        <Loader v-if="loading" :state="loading"/>
+                            Joindre le chat
                     </button>
                 </div>
             </form>
@@ -37,10 +33,14 @@
 </template>
 
 <script>
+import Loader from './components/Loader.vue';
 import router from './router';
 
 export default {
     name: 'Login',
+    components: {
+        Loader,
+    },
     data() {
         return {
             username: '',
@@ -51,9 +51,7 @@ export default {
         async joinChat() {
             if (this.username !== '') {
                 this.loading = true;
-                // Simulate API request delay (remove this line in real application)
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                // Redirect to room page with username as parameter
                 router.push({ name: 'Room', params: { username: this.username }});
             }
         },
