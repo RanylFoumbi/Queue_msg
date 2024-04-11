@@ -76,8 +76,6 @@ export default {
     async mounted() {
          // Connect to the chat server
          this.currentUsername = router.currentRoute.value.params.username as string;
-        //  this.users.push(this.currentUsername);
-         console.log({currentUsername: this.currentUsername});
         this.socket = new WebSocket(`ws://localhost:80/receive/${this.currentUsername}`);
         axios.post(`${this.api_url}/send`, {
             content: "CONNECTION_MESSAGE",
@@ -106,7 +104,6 @@ export default {
             // Get the list of active users from the chat server
             axios.get(`${this.api_url}/users`)
             .then((response) => {
-                console.log({response});
                 this.users = response.data.users;
             });
         },
