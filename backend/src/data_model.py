@@ -13,3 +13,11 @@ class Message(BaseModel):
             "user_name": self.user_name,
             "sent_at": self.sent_at
         }
+    
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            content=data["content"],
+            user_name=data["user_name"],
+            sent_at=data["sent_at"]
+        )

@@ -1,4 +1,5 @@
 
+import json
 from typing import Dict
 from .data_model import Message
 from starlette.websockets import WebSocket, WebSocketDisconnect
@@ -18,12 +19,9 @@ class SocketManager:
         print(f"Disconnecting {user_name}")
         self.active_connections.pop(user_name)
 
-    async def send_message(self, message: Message, socket: WebSocket):
-            print(f"Sending message {message}")
-            print(f"Socket44444 {message['content']}")
-            if message['content'] == "DISCONNECTION_MESSAGE":
-                 socket.send_text(message)
-                 raise WebSocketDisconnect
-            else:
-                 await socket.send_text(message)
+    async def send_message(self, body: str, socket: WebSocket, queue: str):
+        message = Message.from_dict(json.loads(body))
+        socket.send_text(body)
+        if message.content == "DISCONNECTION_MESSAGE" and message.user_name == queue:
+            raise WebSocketDisconnect
            
