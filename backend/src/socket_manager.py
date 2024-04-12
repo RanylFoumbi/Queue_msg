@@ -21,7 +21,7 @@ class SocketManager:
 
     async def send_message(self, body: str, socket: WebSocket, queue: str):
         message = Message.from_dict(json.loads(body))
-        socket.send_text(body)
+        await socket.send_text(body)
         if message.content == "DISCONNECTION_MESSAGE" and message.user_name == queue:
             raise WebSocketDisconnect
            

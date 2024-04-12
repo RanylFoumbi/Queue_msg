@@ -75,7 +75,7 @@ export default {
     },
     async mounted() {
          // Connect to the chat server
-         this.currentUsername = router.currentRoute.value.params.username as string;
+        this.currentUsername = router.currentRoute.value.params.username as string;
         this.socket = new WebSocket(`ws://localhost:80/receive/${this.currentUsername}`);
         axios.post(`${this.api_url}/send`, {
             content: "CONNECTION_MESSAGE",
