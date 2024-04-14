@@ -111,6 +111,7 @@ export default {
         // Receive a message from the chat server
         receiveMessage(event: any) {
              const data = JSON.parse(event.data);
+             console.log({data});
                this.messages.push({
                 content: data.content,
                 createdAt: data.sent_at,
