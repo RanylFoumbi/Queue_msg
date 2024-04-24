@@ -55,12 +55,14 @@ async def receive_message(user_name: str, websocket: WebSocket):
         try:
             if manager.is_connected(user_name):
                 asyncio.run(manager.send_message(body.decode('utf-8'), websocket, queue=user_name))
-                ch.basic_ack(delivery_tag=method.delivery_tag)
         except WebSocketDisconnect:
             print(f"[x] Error {user_name}")
             asyncio.run(manager.disconnect(user_name))
+            channel.queue_delete(queue=user_name)
+            connection.close()
+        finally:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
                 
-
     def consume():
         channel.basic_consume(queue=user_name, on_message_callback=callback, auto_ack=False)
         channel.start_consuming()

@@ -3,11 +3,36 @@ services:
   web:
     build: .
     ports:
-      - "80:80"
+      - 80:80
     volumes:
       - .:/app
   rabbitmq:
-    image: "rabbitmq:3-management"
+    image: rabbitmq:3-management
+    volumes:
+      - ./api/enabled_plugins:/etc/rabbitmq/enabled_plugins
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - 5672:5672
+      - 15672:15672
+      - 15692:15692
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./api/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+    depends_on:
+      - rabbitmq
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./data:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+      
+volumes:
+  grafana_data:
