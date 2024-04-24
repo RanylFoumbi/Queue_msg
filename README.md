@@ -1,4 +1,4 @@
-[![Demo](./assets/grafana-dashboard.png)](./assets/Screen%20Recording%202024-04-24%20at%2015.01.44.mov)
+![Demo monitoring](./assets/grafana-dashboard.png)
 
 # 👨🏼‍🤝‍👨🏼 Nom des participants
 
