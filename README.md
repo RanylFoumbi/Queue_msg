@@ -1,3 +1,5 @@
+[![Demo](./assets/grafana-dashboard.png)](./assets/Screen%20Recording%202024-04-24%20at%2015.01.44.mov)
+
 # 👨🏼‍🤝‍👨🏼 Nom des participants
 
   >- MANFO JIENGAP Rosvalde Florient
@@ -37,7 +39,7 @@ Les utilisateurs connectés sont à la fois **Producer** et **Consumer** étant 
 ## Service de messagerie
 Depuis le repertoire ***backend*** utiliser la commande `docker-compose up` pour démarrer le serveur.
 
- - Le service **Grafana** est disponible à l'adresse   `localhost:3000`.
+ - Le service **Grafana** est disponible à l'adresse   `localhost:3000` avec pour utilisateur ***admin*** mot de passe initial ***admin***.
  - Le service **RabbitMQ** est disponible à l'adresse `localhost:15672`.
  - Le service **Prometheus** est disponible à l'adresse `localhost:9090` et se connecte au service **RabbitMQ** sur le port `15692`.
 
