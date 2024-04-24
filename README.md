@@ -1,9 +1,9 @@
-# 👨🏼‍🤝‍👨🏼Nom des participants
+# 👨🏼‍🤝‍👨🏼 Nom des participants
 
   >- MANFO JIENGAP Rosvalde Florient
   >- FOUMBI DJOMO Ranyl Josué
 
-# 🏗️Architecture de l'application
+# 🏗️ Architecture de l'application
 
   ## Composants :
 
@@ -32,7 +32,7 @@
 
 Les utilisateurs connectés sont à la fois **Producer** et **Consumer** étant donné qu'ils sont tous connectés au même **Exchange**
 
-# 🚀Exécution
+# 🚀 Exécution
 
 ## Service de messagerie
 Depuis le repertoire ***backend*** utiliser la commande `docker-compose up` pour démarrer le serveur.

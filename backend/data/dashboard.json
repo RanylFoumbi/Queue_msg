@@ -20,7 +20,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 4279,
   "graphTooltip": 1,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -31,14 +31,26 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -57,21 +69,23 @@
       },
       "id": 5,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.4.2",
+      "repeat": "datasource",
+      "repeatDirection": "h",
       "targets": [
         {
           "datasource": {
@@ -123,7 +137,7 @@
         }
       ],
       "title": "Connections, channels and consumers",
-      "type": "gauge"
+      "type": "state-timeline"
     },
     {
       "datasource": {
@@ -172,7 +186,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -306,7 +321,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -319,8 +335,8 @@
       },
       "gridPos": {
         "h": 14,
-        "w": 24,
-        "x": 0,
+        "w": 12,
+        "x": 12,
         "y": 5
       },
       "id": 2,
@@ -367,7 +383,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": "",
   "schemaVersion": 39,
   "tags": [
     "rabbitmq",
@@ -377,7 +393,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "Prometheus",
           "value": "PBFA97CFB590B2093"
         },
@@ -457,6 +473,6 @@
   "timezone": "browser",
   "title": "RabbitMQ Monitoring",
   "uid": "Wu4xkdEZk",
-  "version": 5,
+  "version": 1,
   "weekStart": ""
 }
